@@ -25,10 +25,70 @@ world.print_rooms()
 
 player = Player(world.starting_room)
 
+
+# graph keep track of visited rooms
+"""
+{
+    room_id: { exit_directions }
+}
+"""
+visited = {}
+
+# (current_room, last_direction_traveled)
+stack = [(player.current_room, None)]
+
 # Fill this out with directions to walk
 # traversal_path = ['n', 'n']
 traversal_path = []
 
+def get_opposite(direction):
+    if direction == 'n':
+        return 's'
+    if direction == 's':
+        return 'n'
+    if direction == 'w':
+        return 'e'
+    if direction == 'e':
+        return 'w'
+
+# loop while the stack is not empty
+while len(stack) > 0:
+
+    # current room is first position of the last item in the stack
+    current_room = stack[-1][0]
+    # direction traveled is second position of last item on stack
+    direction_traveled = stack[-1][1]
+    
+    if current_room.id not in visited: # if the current room is not visited
+        # initialize a set
+        visited[current_room.id] = set()
+    
+    if direction_traveled: # if the direction traveled exists
+        # add that direction to the room set
+        visited[current_room.id].add(direction_traveled)
+    
+    if len(visited) == len(room_graph): # if the number of rooms visited equals the number of rooms in the room graph
+        break  # break the loop
+    
+    # get a list of exits not traveled
+    exits = [ e for e in current_room.get_exits() if e not in visited[current_room.id]]
+    # if there are exits to choose from pick a random one
+    random_direction = random.choice(exits) if len(exits) > 0 else None
+    # get the opposite of the random direction
+    opposite_direction = get_opposite(random_direction)
+
+    if random_direction != None: # if there is a direction available
+        # add that direction to the room set
+        visited[current_room.id].add(random_direction)
+        # put the next room in the stack with the direction traveled from
+        stack.append((current_room.get_room_in_direction(random_direction), opposite_direction))
+        # add the direction to the traversal path
+        traversal_path.append(random_direction)
+    else: # if no directions are available
+        # add the direction to the traversal path
+        traversal_path.append(direction_traveled)
+        # take the previous room off the stack
+        stack.pop()
 
 
 # TRAVERSAL TEST - DO NOT MODIFY
